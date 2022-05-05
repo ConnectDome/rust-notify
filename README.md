@@ -19,9 +19,13 @@ A simple service to announce new blogs on your Slack/Discord + send emails to yo
 
 - [ ] SendGrid
 - [ ] MailGun
-- [ ] SES 
+- [ ] SES
 
 ### Who is this for?
 
-This is a free and open-source solution for those self-hosting [a blog like us](https://blog.connectdome.com). 
+This is a free and open-source solution for those self-hosting [a blog like us](https://blog.connectdome.com).
 
+### Using
+
+- Serenity
+- Tokio

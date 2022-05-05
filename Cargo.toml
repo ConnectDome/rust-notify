@@ -1,0 +1,19 @@
+[package]
+authors = ["Arth Tyagi <arthtyagi7@gmail.com>"]
+edition = "2018"
+name = "rust-notify"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies.webhook]
+verion = "1.0.0"
+
+[dependencies.dotenv]
+version = "0.15.0"
+
+[dependencies.notion]
+version = "0.3.5"
+
+[dependencies.tokio]
+version = "1.18.1"
