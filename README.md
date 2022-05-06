@@ -7,8 +7,8 @@ A simple service to announce new blogs on your Slack/Discord + send emails to yo
 
 ## Feature 1: Supported Platforms
 
-* [ ] Discord
-  + [ ] Notion
+* [x] Discord
+  + [x] Notion
   + [ ] Medium
   + [ ] Revue
 
@@ -26,5 +26,6 @@ This is a free and open-source solution for those self-hosting [a blog like us](
 
 ### Using
 
-* Serenity (used [Webhook-rs instead](https://github.com/thoo0224/webhook-rs))
 * Tokio
+* Reqwest
+* Serde
