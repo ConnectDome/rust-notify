@@ -1,6 +1,5 @@
 use serde::Deserialize;
 use serde_json::json;
-use std::collections::HashSet;
 use tokio::time::{sleep, Duration};
 
 #[derive(Clone, Debug, Deserialize)]
@@ -23,16 +22,21 @@ struct NotionConfig {
     database: String,
 }
 
-#[derive(Clone, Debug, Hash, Eq, PartialEq, Deserialize)]
+#[derive(Clone, Debug, Eq, Deserialize)]
 struct Page {
     id: String,
-    last_edited_time: String,
     url: String,
+}
+
+impl PartialEq for Page {
+    fn eq(&self, other: &Page) -> bool {
+        self.id == other.id
+    }
 }
 
 #[derive(Clone, Debug, Deserialize)]
 struct Response {
-    results: HashSet<Page>,
+    results: Vec<Page>,
 }
 
 #[tokio::main]
@@ -75,14 +79,10 @@ async fn main() -> anyhow::Result<()> {
             .json::<Response>()
             .await?;
 
-        let pulled = &resp.results;
-
-        let diff = last.symmetric_difference(pulled).collect::<Vec<&Page>>();
-
-        if diff.len() > 0 {
-            let page = diff[0];
-
-            upload_to_discord(&client, &page, &config).await?;
+        for page in &resp.results {
+            if !last.contains(page) {
+                upload_to_discord(&client, page, &config).await?;
+            }
         }
 
         last = resp.results;
