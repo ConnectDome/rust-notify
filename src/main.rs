@@ -1,6 +1,7 @@
 use serde::Deserialize;
 use serde_json::json;
 use tokio::time::{sleep, Duration};
+use tracing_subscriber::EnvFilter;
 
 #[derive(Clone, Debug, Deserialize)]
 struct Config {
@@ -41,6 +42,10 @@ struct Response {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::from_env("RUST_NOTIFY_LOG"))
+        .init();
+
     let filename =
         std::env::var("RUST_NOTIFY_CONFIG").unwrap_or_else(|_| String::from("config.toml"));
     let s = std::fs::read_to_string(filename)?;
@@ -62,6 +67,8 @@ async fn main() -> anyhow::Result<()> {
             .json::<Response>()
             .await?;
 
+        tracing::debug!("Fetched the pages for the first time");
+
         resp.results
     };
 
@@ -79,13 +86,17 @@ async fn main() -> anyhow::Result<()> {
             .json::<Response>()
             .await?;
 
+        tracing::debug!("Fetched latest notion pages");
+
         for page in &resp.results {
             if !last.contains(page) {
+                tracing::info!("New page found, sending...");
                 upload_to_discord(&client, page, &config).await?;
             }
         }
 
         last = resp.results;
+        tracing::debug!("Set last pages");
 
         sleep(Duration::from_secs(config.interval)).await;
     }
@@ -107,6 +118,8 @@ async fn upload_to_discord(
         .json(&body)
         .send()
         .await?;
+
+    tracing::debug!("Sent message to discord");
 
     Ok(())
 }
