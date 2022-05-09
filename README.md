@@ -1,6 +1,6 @@
 # ConnectDome - Rust Notify
 
-![connectdome-png-name](https://user-images.githubusercontent.com/41021374/167411018-51939385-d919-4406-bee2-0969aa1c8b9e.png =250x250)
+<img src="https://user-images.githubusercontent.com/41021374/167411018-51939385-d919-4406-bee2-0969aa1c8b9e.png" width="256">
 
 A simple service to announce new blogs on your Slack/Discord + send emails to your list via your TES.
 
