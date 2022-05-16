@@ -21,6 +21,7 @@ struct DiscordConfig {
 struct NotionConfig {
     secret: String,
     database: String,
+    api_version: Option<String>,
 }
 
 #[derive(Clone, Debug, Eq, Deserialize)]
@@ -61,7 +62,10 @@ async fn main() -> anyhow::Result<()> {
             ))
             .header("Content-Type", "application/json")
             .header("Authorization", format!("Bearer {}", config.notion.secret))
-            .header("Notion-Version", "2022-02-22")
+            .header(
+                "Notion-Version",
+                config.notion.api_version.as_deref().unwrap_or("2022-02-22"),
+            )
             .send()
             .await?
             .json::<Response>()
@@ -80,7 +84,10 @@ async fn main() -> anyhow::Result<()> {
             ))
             .header("Content-Type", "application/json")
             .header("Authorization", format!("Bearer {}", config.notion.secret))
-            .header("Notion-Version", "2022-02-22")
+            .header(
+                "Notion-Version",
+                config.notion.api_version.as_deref().unwrap_or("2022-02-22"),
+            )
             .send()
             .await?
             .json::<Response>()
