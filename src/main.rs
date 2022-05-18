@@ -1,3 +1,6 @@
+use lettre::smtp::authentication::Credentials;
+use lettre::{SmtpClient, SmtpTransport, Transport};
+use lettre_email::EmailBuilder;
 use serde::Deserialize;
 use serde_json::json;
 use tokio::time::{sleep, Duration};
@@ -7,6 +10,7 @@ use tracing_subscriber::EnvFilter;
 struct Config {
     discord: DiscordConfig,
     notion: NotionConfig,
+    mail_simple: SimpleMailConfig,
     interval: u64,
 }
 
@@ -22,6 +26,15 @@ struct NotionConfig {
     secret: String,
     database: String,
     api_version: Option<String>,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+struct SimpleMailConfig {
+    to: String,
+    from: String,
+    domain: String,
+    user: String,
+    pass: String,
 }
 
 #[derive(Clone, Debug, Eq, Deserialize)]
@@ -51,6 +64,23 @@ async fn main() -> anyhow::Result<()> {
         std::env::var("RUST_NOTIFY_CONFIG").unwrap_or_else(|_| String::from("config.toml"));
     let s = std::fs::read_to_string(filename)?;
     let config: Config = toml::from_str(&s)?;
+
+    let email = EmailBuilder::new()
+        .to(&*config.mail_simple.to)
+        .from(&*config.mail_simple.from)
+        .subject("New post from ConnectDome")
+        .text("TODO")
+        .build()?;
+
+    let creds = Credentials::new(
+        config.mail_simple.user.clone(),
+        config.mail_simple.pass.clone(),
+    );
+
+    let smtp_client = SmtpClient::new_simple(&config.mail_simple.domain)?.credentials(creds);
+    let mut mailer = SmtpTransport::new(smtp_client);
+
+    mailer.send(email.into())?;
 
     let client = reqwest::Client::new();
 
