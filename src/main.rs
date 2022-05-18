@@ -153,6 +153,8 @@ fn send_email(config: &Config, page: &Page) -> anyhow::Result<()> {
     let raw = std::fs::read_to_string("email.html")?;
     let rendered = Tera::one_off(&raw, &ctx, true)?;
 
+    tracing::debug!("Rendered email template");
+
     let email = EmailBuilder::new()
         .to(&*config.mail_simple.to)
         .from(&*config.mail_simple.from)
@@ -169,6 +171,8 @@ fn send_email(config: &Config, page: &Page) -> anyhow::Result<()> {
     let mut mailer = SmtpTransport::new(smtp_client);
 
     mailer.send(email.into())?;
+
+    tracing::debug!("Sent mail");
 
     Ok(())
 }
