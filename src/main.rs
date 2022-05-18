@@ -3,6 +3,7 @@ use lettre::{SmtpClient, SmtpTransport, Transport};
 use lettre_email::EmailBuilder;
 use serde::Deserialize;
 use serde_json::json;
+use tera::{Context, Tera};
 use tokio::time::{sleep, Duration};
 use tracing_subscriber::EnvFilter;
 
@@ -65,23 +66,6 @@ async fn main() -> anyhow::Result<()> {
     let s = std::fs::read_to_string(filename)?;
     let config: Config = toml::from_str(&s)?;
 
-    let email = EmailBuilder::new()
-        .to(&*config.mail_simple.to)
-        .from(&*config.mail_simple.from)
-        .subject("New post from ConnectDome")
-        .text("TODO")
-        .build()?;
-
-    let creds = Credentials::new(
-        config.mail_simple.user.clone(),
-        config.mail_simple.pass.clone(),
-    );
-
-    let smtp_client = SmtpClient::new_simple(&config.mail_simple.domain)?.credentials(creds);
-    let mut mailer = SmtpTransport::new(smtp_client);
-
-    mailer.send(email.into())?;
-
     let client = reqwest::Client::new();
 
     let mut last = {
@@ -129,6 +113,7 @@ async fn main() -> anyhow::Result<()> {
             if !last.contains(page) {
                 tracing::info!("New page found, sending...");
                 upload_to_discord(&client, page, &config).await?;
+                send_email(&config, &page)?;
             }
         }
 
@@ -145,7 +130,7 @@ async fn upload_to_discord(
     config: &Config,
 ) -> anyhow::Result<()> {
     let body = json!({
-        "content": format!("New post: {}", page.url), // this can be changed
+        "content": format!("New post: {}", page.url), // TODO: make this configurable?
         "username": config.discord.username.as_ref(),
         "avatar_url": config.discord.avatar.as_ref(),
     });
@@ -157,6 +142,33 @@ async fn upload_to_discord(
         .await?;
 
     tracing::debug!("Sent message to discord");
+
+    Ok(())
+}
+
+fn send_email(config: &Config, page: &Page) -> anyhow::Result<()> {
+    let mut ctx = Context::new();
+    ctx.insert("url", &page.url);
+
+    let raw = std::fs::read_to_string("email.html")?;
+    let rendered = Tera::one_off(&raw, &ctx, true)?;
+
+    let email = EmailBuilder::new()
+        .to(&*config.mail_simple.to)
+        .from(&*config.mail_simple.from)
+        .subject("New post from ConnectDome") // TODO: make this configurable?
+        .html(rendered)
+        .build()?;
+
+    let creds = Credentials::new(
+        config.mail_simple.user.clone(),
+        config.mail_simple.pass.clone(),
+    );
+
+    let smtp_client = SmtpClient::new_simple(&config.mail_simple.domain)?.credentials(creds);
+    let mut mailer = SmtpTransport::new(smtp_client);
+
+    mailer.send(email.into())?;
 
     Ok(())
 }

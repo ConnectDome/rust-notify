@@ -4,3 +4,4 @@
 **/*.rs.bk
 
 config.toml
+email.html
