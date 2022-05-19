@@ -36,6 +36,7 @@ struct SimpleMailConfig {
     domain: String,
     user: String,
     pass: String,
+    email_template: Option<String>,
 }
 
 #[derive(Clone, Debug, Eq, Deserialize)]
@@ -150,7 +151,13 @@ fn send_email(config: &Config, page: &Page) -> anyhow::Result<()> {
     let mut ctx = Context::new();
     ctx.insert("url", &page.url);
 
-    let raw = std::fs::read_to_string("email.html")?;
+    let raw = std::fs::read_to_string(
+        config
+            .mail_simple
+            .email_template
+            .as_deref()
+            .unwrap_or("email.html"),
+    )?;
     let rendered = Tera::one_off(&raw, &ctx, true)?;
 
     tracing::debug!("Rendered email template");
