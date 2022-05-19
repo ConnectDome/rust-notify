@@ -42,10 +42,13 @@ interval = 10 # Interval (in seconds) to check for new posts
 
 [discord]
 webhook = "..." # Discord webhook URL
+username = "..." # Optional. Username for the bot to send messages with
+avatar = "..." # Optional. Avatar URL for the bot to send messages with
 
 [notion]
 secret = "..." # Notion integration secret
 database = "..." # Notion database ID. The database has to be shared with the integration.
+api_version = "..." # Optional: Notion API version. Defaults to "2022-02-22"
 
 [mail_simple]
 to = "..." # Address of the mailing list
@@ -53,4 +56,5 @@ from = "..." # From address
 domain = "..." # Domain of the SMTP server
 user = "..." # Username for the SMTP server
 pass = "..." # Password for the SMTP server
+email_template = "..." # Optional. Path to an HTML template for use in the email
 ```
